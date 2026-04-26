@@ -1,0 +1,1 @@
+import Link from "next/link"; export default function P(){return <div style={{padding:24}}><h2>Dashboard</h2><Link href="/dashboard/projects/demo/ide">Open IDE</Link></div>}

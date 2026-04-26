@@ -1,0 +1,27 @@
+{
+  "name": "ai-dev-platform",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm:dev:web\" \"npm:dev:api\" \"npm:dev:worker\" \"npm:dev:runner\"",
+    "dev:web": "npm --workspace @apps/web run dev",
+    "dev:api": "npm --workspace @apps/api run dev",
+    "dev:worker": "npm --workspace @apps/worker run dev",
+    "dev:runner": "npm --workspace @apps/runner run dev",
+    "build": "npm run -ws build",
+    "test": "npm run -ws test",
+    "lint": "npm run -ws lint",
+    "typecheck": "npm run -ws typecheck",
+    "db:generate": "npm --workspace @packages/db run generate",
+    "db:migrate": "npm --workspace @packages/db run migrate",
+    "db:seed": "npm --workspace @packages/db run seed"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1",
+    "typescript": "^5.6.3"
+  }
+}

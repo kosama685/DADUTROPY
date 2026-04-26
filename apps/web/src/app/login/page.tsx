@@ -1,0 +1,1 @@
+export default function Page(){return <div style={{padding:24}}><h2>Login</h2><form><input placeholder="email"/><input placeholder="password" type="password"/><button>Sign in</button></form></div>}

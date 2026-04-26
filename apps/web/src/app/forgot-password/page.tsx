@@ -1,0 +1,1 @@
+export default function Page(){return <div style={{padding:24}}><h2>Forgot Password</h2></div>}
