@@ -1,0 +1,3 @@
+name = "dadutropy-worker"
+main = "apps/worker/src/main.ts"
+compatibility_date = "2026-04-26"
