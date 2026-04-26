@@ -21,3 +21,7 @@ npm run deploy
 ```
 
 That command delegates to `@apps/worker` so Wrangler runs from a concrete app workspace, not from the monorepo root.
+
+Some CI/CD platforms invoke `npx wrangler versions upload` from the repo root.
+A root `wrangler.jsonc` is included so this command resolves to the worker entrypoint (`apps/worker/src/main.ts`).
+
