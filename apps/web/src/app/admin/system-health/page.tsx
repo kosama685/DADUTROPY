@@ -1,0 +1,1 @@
+export default function P(){return <div style={{padding:24}}><h2>System Health</h2></div>}

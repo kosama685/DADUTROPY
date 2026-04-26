@@ -1,0 +1,52 @@
+generator client { provider = "prisma-client-js" }
+
+datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+
+model User { id String @id @default(cuid()) email String @unique name String? passwordHash String role String @default("DEVELOPER") organizations OrganizationMember[] apiKeys ApiKey[] sessions Session[] createdAt DateTime @default(now()) }
+model Account { id String @id @default(cuid()) userId String provider String providerAccountId String user User @relation(fields:[userId], references:[id]) }
+model Session { id String @id @default(cuid()) userId String refreshToken String @unique expiresAt DateTime user User @relation(fields:[userId], references:[id]) }
+model Organization { id String @id @default(cuid()) name String members OrganizationMember[] teams Team[] projects Project[] policies OrganizationPolicy[] createdAt DateTime @default(now()) }
+model OrganizationMember { id String @id @default(cuid()) organizationId String userId String role String organization Organization @relation(fields:[organizationId], references:[id]) user User @relation(fields:[userId], references:[id]) }
+model Team { id String @id @default(cuid()) name String organizationId String organization Organization @relation(fields:[organizationId], references:[id]) members TeamMember[] projects Project[] }
+model TeamMember { id String @id @default(cuid()) teamId String userId String role String team Team @relation(fields:[teamId], references:[id]) }
+model Project { id String @id @default(cuid()) name String organizationId String teamId String? organization Organization @relation(fields:[organizationId], references:[id]) team Team? @relation(fields:[teamId], references:[id]) repositories Repository[] conversations Conversation[] agentSessions AgentSession[] }
+model Repository { id String @id @default(cuid()) projectId String name String url String? provider String @default("manual") project Project @relation(fields:[projectId], references:[id]) branches RepositoryBranch[] files RepositoryFile[] chunks CodeChunk[] }
+model RepositoryBranch { id String @id @default(cuid()) repositoryId String name String repository Repository @relation(fields:[repositoryId], references:[id]) }
+model RepositoryFile { id String @id @default(cuid()) repositoryId String path String content String repository Repository @relation(fields:[repositoryId], references:[id]) }
+model CodeChunk { id String @id @default(cuid()) repositoryId String filePath String content String embedding Embedding? repository Repository @relation(fields:[repositoryId], references:[id]) }
+model Embedding { id String @id @default(cuid()) chunkId String @unique vector Unsupported("vector") chunk CodeChunk @relation(fields:[chunkId], references:[id]) }
+model Conversation { id String @id @default(cuid()) projectId String title String project Project @relation(fields:[projectId], references:[id]) messages Message[] }
+model Message { id String @id @default(cuid()) conversationId String role String content String conversation Conversation @relation(fields:[conversationId], references:[id]) createdAt DateTime @default(now()) }
+model AgentSession { id String @id @default(cuid()) projectId String mode String status String project Project @relation(fields:[projectId], references:[id]) steps AgentStep[] checkpoints AgentCheckpoint[] }
+model AgentStep { id String @id @default(cuid()) sessionId String type String content String session AgentSession @relation(fields:[sessionId], references:[id]) }
+model ToolCall { id String @id @default(cuid()) name String input Json status String toolResult ToolResult? }
+model ToolResult { id String @id @default(cuid()) toolCallId String @unique output Json toolCall ToolCall @relation(fields:[toolCallId], references:[id]) }
+model AgentCheckpoint { id String @id @default(cuid()) sessionId String label String session AgentSession @relation(fields:[sessionId], references:[id]) snapshots FileSnapshot[] }
+model FileSnapshot { id String @id @default(cuid()) checkpointId String path String content String checkpoint AgentCheckpoint @relation(fields:[checkpointId], references:[id]) patches FilePatch[] }
+model FilePatch { id String @id @default(cuid()) snapshotId String diff String snapshot FileSnapshot @relation(fields:[snapshotId], references:[id]) }
+model TerminalCommand { id String @id @default(cuid()) projectId String command String status String output String? }
+model CloudAgent { id String @id @default(cuid()) projectId String status String logs String? }
+model Automation { id String @id @default(cuid()) projectId String name String trigger String action String enabled Boolean @default(true) runs AutomationRun[] }
+model AutomationRun { id String @id @default(cuid()) automationId String status String logs String automation Automation @relation(fields:[automationId], references:[id]) }
+model Rule { id String @id @default(cuid()) scope String name String body String priority Int @default(0) }
+model Skill { id String @id @default(cuid()) scope String name String markdown String enabled Boolean @default(true) }
+model Hook { id String @id @default(cuid()) scope String name String event String type String policy String }
+model Plugin { id String @id @default(cuid()) scope String name String version String manifest Json enabled Boolean @default(true) }
+model ExternalToolServer { id String @id @default(cuid()) name String config Json enabled Boolean @default(true) tools ExternalTool[] }
+model ExternalTool { id String @id @default(cuid()) serverId String name String description String enabled Boolean @default(true) server ExternalToolServer @relation(fields:[serverId], references:[id]) }
+model CanvasArtifact { id String @id @default(cuid()) sessionId String type String title String content String }
+model ReviewJob { id String @id @default(cuid()) projectId String status String summary String? findings ReviewFinding[] }
+model ReviewFinding { id String @id @default(cuid()) jobId String severity String filePath String message String status String @default("open") job ReviewJob @relation(fields:[jobId], references:[id]) }
+model Integration { id String @id @default(cuid()) organizationId String type String status String config Json }
+model Secret { id String @id @default(cuid()) organizationId String key String valueEnc String }
+model ApiKey { id String @id @default(cuid()) userId String name String keyHash String user User @relation(fields:[userId], references:[id]) }
+model ServiceAccount { id String @id @default(cuid()) organizationId String name String role String tokenHash String }
+model UsageEvent { id String @id @default(cuid()) organizationId String metric String value Float createdAt DateTime @default(now()) }
+model BillingSubscription { id String @id @default(cuid()) organizationId String plan String status String stripeCustomerId String? }
+model Invoice { id String @id @default(cuid()) organizationId String amountCents Int status String issuedAt DateTime @default(now()) }
+model AuditLog { id String @id @default(cuid()) organizationId String actorId String? action String metadata Json createdAt DateTime @default(now()) }
+model Notification { id String @id @default(cuid()) userId String title String body String read Boolean @default(false) createdAt DateTime @default(now()) }
+model ModelProvider { id String @id @default(cuid()) name String kind String health String @default("unknown") models ModelConfig[] }
+model ModelConfig { id String @id @default(cuid()) providerId String model String inputCost Float outputCost Float provider ModelProvider @relation(fields:[providerId], references:[id]) }
+model OrganizationPolicy { id String @id @default(cuid()) organizationId String key String value Json organization Organization @relation(fields:[organizationId], references:[id]) }
+model FeatureFlag { id String @id @default(cuid()) key String enabled Boolean @default(false) scope String @default("global") }

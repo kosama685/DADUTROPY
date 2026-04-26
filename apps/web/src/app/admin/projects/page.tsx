@@ -1,0 +1,1 @@
+export default function P(){return <div style={{padding:24}}><h2>Admin Projects</h2></div>}

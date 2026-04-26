@@ -1,0 +1,1 @@
+export default function P(){return <div style={{padding:24}}><h2>Chat History</h2></div>}
