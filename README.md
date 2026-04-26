@@ -26,3 +26,12 @@ Clean-room, original monorepo for a web-based AI-native development platform.
 - Test: `npm test`
 - Build: `npm run build`
 - Deploy: apply `infra/k8s/base.yaml`
+
+## Documentation
+- Architecture: `docs/ARCHITECTURE.md`
+- API: `docs/API.md`
+- Security: `docs/SECURITY.md`
+- Deployment: `docs/DEPLOYMENT.md`
+- Plugin development: `docs/PLUGIN_DEVELOPMENT.md`
+- Admin guide: `docs/ADMIN.md`
+- Cursor-style build prompt: `docs/AETHERCODE_CURSOR_CLONE_PROMPT.md`
