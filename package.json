@@ -18,7 +18,9 @@
     "typecheck": "npm run -ws typecheck",
     "db:generate": "npm --workspace @packages/db run generate",
     "db:migrate": "npm --workspace @packages/db run migrate",
-    "db:seed": "npm --workspace @packages/db run seed"
+    "db:seed": "npm --workspace @packages/db run seed",
+    "deploy": "npm run deploy:worker",
+    "deploy:worker": "npm --workspace @apps/worker exec -- wrangler deploy"
   },
   "devDependencies": {
     "concurrently": "^9.0.1",
