@@ -1,0 +1,1755 @@
+## Scope
+
+Below is a **public, documentation-backed feature inventory and product analysis of Cursor** as of the current public Cursor docs/site I could verify. It does **not** include undocumented internal flags, private experiments, proprietary implementation details, or non-public admin settings. Cursor’s own documentation map covers Get Started, Agent, customization, Cloud Agents, integrations, CLI, account/team/enterprise docs, and Help Center docs, so I used that as the backbone for the inventory. ([Cursor][1])
+
+I’ll use “reverse engineering” in the safe, legal sense: **black-box product decomposition, feature mapping, architecture inference, user-flow analysis, and MVP planning**—not decompiling Cursor, bypassing licenses, scraping private APIs, or copying proprietary code/assets.
+
+---
+
+# 1. Executive analysis: what Cursor is
+
+Cursor is positioned as an **AI editor and coding-agent platform**. Its core value is not just autocomplete; it combines codebase understanding, agentic file editing, planning, debugging, testing, code review, cloud execution, terminal automation, browser interaction, PR automation, team controls, usage analytics, and enterprise governance. Cursor’s docs describe it as a tool for understanding a codebase, planning/building features, fixing bugs, reviewing changes, customizing AI behavior, and connecting engineering workflows. ([Cursor][2])
+
+Strategically, Cursor is built around five layers:
+
+1. **Local AI IDE** — VS Code-like editor, extensions, settings, keybindings, themes, git, terminal, files, search.
+2. **AI assistance layer** — Tab autocomplete, inline edit, Ask, Agent, Plan, Debug, Max Mode.
+3. **Agent tooling layer** — code search, file read/write, shell commands, browser, screenshots, image generation, MCP tools, rules, skills, subagents, hooks.
+4. **Cloud execution layer** — Cloud Agents, Bugbot, automations, PR workflows, cloud VMs, self-hosted pools, local-machine agents.
+5. **Enterprise control plane** — SSO, SCIM, RBAC, admin dashboard, analytics, audit logs, model controls, repo blocklists, privacy mode, MDM, billing groups, service accounts.
+
+---
+
+# 2. Complete public feature inventory
+
+## A. Core editor and onboarding
+
+Cursor supports installation and use across major desktop platforms: macOS, Windows, and Linux, with Linux options including Debian/Ubuntu apt packages, RHEL/Fedora yum packages, and AppImage. The quickstart flow includes installing, signing in, opening a folder, using Agent with keyboard shortcuts, reviewing diffs, running tests/typecheck/lint/build, and using Plan Mode before implementation. ([Cursor][3])
+
+**Editor/onboarding features:**
+
+* Desktop editor.
+* macOS, Windows, and Linux support.
+* apt/yum package support on Linux.
+* AppImage Linux distribution.
+* Sign-in/account flow.
+* Folder/workspace opening.
+* Agent side panel.
+* Diffs after AI edits.
+* Test/typecheck/lint/build workflow.
+* Plan-before-build workflow.
+* VS Code-style keyboard shortcuts.
+* Command palette.
+* Settings UI.
+* Theme selection.
+* Font size/family settings.
+* Light/dark/OS theme support.
+* Font ligatures.
+* Extension sidebar.
+* Source Control panel.
+* Terminal integration.
+* File/folder project model.
+* Multi-workspace behavior.
+* Separate Cursor and VS Code apps can run on same projects.
+* Import from VS Code: extensions, themes, settings, keybindings.
+* JetBrains keymap support through extension.
+* JetBrains migration guidance.
+* Open VSX extension registry.
+* Extension install/disable workflow.
+* Verified extension publisher badge process.
+* Security/compatibility verification for extensions.
+* Same default shortcuts as VS Code plus AI shortcuts.
+* Custom keyboard shortcut remapping. ([Cursor][4])
+
+---
+
+## B. AI modes and coding features
+
+Cursor’s AI feature set is organized around multiple modes: **Agent**, **Ask**, **Plan**, **Debug**, **Inline Edit**, **Tab**, and **Max Mode**. The Agent can search a codebase, edit multiple files, run terminal commands, fix errors, build features, refactor, write tests, and run shell commands. Ask is read-only. Plan researches before implementation. Debug focuses on root cause, instrumentation, reproduction, logs, fixes, verification, and cleanup. ([Cursor][5])
+
+### Agent mode
+
+* Codebase search.
+* Multi-file editing.
+* Terminal command execution.
+* Build feature implementation.
+* Refactoring.
+* Bug fixing.
+* Test writing.
+* Shell command execution.
+* Error fixing.
+* Diff review.
+* Reject/revert changes.
+* Stop/redirect an agent.
+* Restore checkpoints.
+* Queue follow-up messages.
+* Drag/reorder queued messages.
+* Delegate tasks to subagents.
+* Local Agent in editor.
+* Cloud Agent via browser.
+* Modes: Agent, Ask, Plan, Debug.
+* Rules applied across modes.
+* Agent review integration.
+* Bugbot handoff/review relationship.
+* Image generation from text/reference images saved to project and shown inline. ([Cursor][5])
+
+### Ask mode
+
+* Read-only codebase Q&A.
+* Code explanation.
+* Architecture understanding.
+* No file edits.
+* No code modification.
+* Safer exploration mode. ([Cursor][6])
+
+### Plan Mode
+
+* Researches codebase before implementation.
+* Asks clarifying questions.
+* Creates detailed implementation plan.
+* Waits for approval before building.
+* Produces editable virtual plan file.
+* Save plan to workspace.
+* Useful for complex, multi-file, architectural, or unclear work.
+* Rollback/revert/start-over support. ([Cursor][3])
+
+### Debug Mode
+
+* Root-cause analysis.
+* Hypothesis generation.
+* Adds log statements.
+* Uses runtime information.
+* Reproduces failures.
+* Analyzes logs.
+* Applies targeted fixes.
+* Verifies fix.
+* Cleans up instrumentation. ([Cursor][7])
+
+### Inline Edit / Cmd+K
+
+* Targeted selected-code editing.
+* Applies changes in place.
+* Follow-up refinements.
+* Question mode with Alt/Option+Return.
+* “Do it” conversion from question to edit.
+* Send selected code context to Agent. ([Cursor][8])
+
+### Tab autocomplete
+
+* Next-action prediction.
+* Code completion based on recent edits.
+* Surrounding-code context.
+* Linter-error context.
+* Multi-line edits.
+* Missing import suggestions.
+* Coordinated edits.
+* Jump-in-file suggestions.
+* Cross-file edits through portal.
+* Accept full suggestion.
+* Accept word-by-word.
+* Reject suggestion.
+* Toggle Tab.
+* Snooze Tab.
+* Disable globally.
+* Disable per file extension. ([Cursor][9])
+
+### Max Mode
+
+* Extends model context window to the model maximum.
+* Toggle from model selector.
+* Global setting.
+* Recommended selectively because of cost/usage implications. ([Cursor][10])
+
+---
+
+## C. Agent tools
+
+Cursor Agent is composed of instructions/rules, tools, and a selected model. Public docs list tools for semantic search, file/folder search, web search, rules fetching, file/image reading, editing files, shell commands, browser automation, image generation, and asking questions. ([Cursor][11])
+
+**Agent tool features:**
+
+* Semantic code search.
+* Exact file/folder search.
+* Web search.
+* Rule fetching.
+* File reading.
+* Image reading.
+* Supported image formats include PNG, JPG, GIF, WebP, SVG.
+* File editing.
+* Shell command execution.
+* Browser control.
+* Image generation.
+* Ask-user tool.
+* Checkpoints.
+* Queued messages.
+* Keyboard shortcuts for queued/immediate messages.
+* Tool-call approval workflows.
+* Tool output inspection.
+
+---
+
+## D. Codebase search, indexing, and context
+
+Cursor combines exact search and semantic search. Docs say Instant Grep is a custom search engine faster than ripgrep, while semantic search uses embeddings and chunking. The index begins automatically, becomes available at around 80%, syncs periodically, respects `.gitignore` and `.cursorignore`, supports included-file inspection, and stores encrypted/obfuscated data rather than plaintext code in the vector database. ([Cursor][12])
+
+**Search/indexing/context features:**
+
+* Instant Grep.
+* Exact text search.
+* Semantic search by meaning.
+* Hybrid grep + semantic retrieval.
+* Codebase chunking.
+* Vector embeddings.
+* Automatic indexing.
+* Periodic sync.
+* Change/deletion processing.
+* `.gitignore` support.
+* `.cursorignore` support.
+* Included-file viewer.
+* Obfuscated file paths.
+* Encrypted indexing storage.
+* Client-side code lookup after semantic retrieval.
+* Multi-root workspace indexing.
+* Team-shared indexes.
+* Index deletion after inactivity.
+* Custom path decryption key.
+* Explore subagent for broader codebase exploration.
+* Context gathering by Agent.
+* `@` mentions for files.
+* `@` folders.
+* `@` code symbols.
+* `@` documentation.
+* `@` web content.
+* `@` codebase.
+* `@` past chats.
+* Multiple `@` mentions in one prompt. ([Cursor][13])
+
+---
+
+## E. Prompting and input features
+
+Cursor supports explicit context selection and richer input methods. Its docs mention file/folder/symbol/docs/past-chat mentions, image input through drag/drop or paste, voice input, model picker shortcuts, and default model settings. ([Cursor][14])
+
+**Prompting features:**
+
+* Chat prompt input.
+* `@file` context.
+* `@folder` context.
+* `@symbol` context.
+* `@Docs`.
+* Past chat context.
+* Image input.
+* Drag-and-drop images.
+* Paste images.
+* Voice input.
+* Model picker.
+* Model loop shortcut.
+* Default model setting.
+* Agent self-gathering context.
+* Prompt queue.
+* Immediate prompt submission.
+* Follow-up prompts.
+* Shared transcripts.
+* Team/private/public transcript sharing depending on plan.
+* Fork shared transcript into Cursor.
+* Transcript redaction for common secret patterns.
+* Shared transcript management.
+* Share limits. ([Cursor][15])
+
+---
+
+## F. Terminal and sandbox features
+
+Cursor Agent can run terminal commands automatically for dependencies, tests, and builds. It has sandbox controls on supported platforms, auto-run modes, network controls, protected files, allowlists, and enterprise controls. ([Cursor][16])
+
+**Terminal features:**
+
+* Agent-run shell commands.
+* Dependency installation commands.
+* Test execution.
+* Build execution.
+* Lint/typecheck execution.
+* Shell output visible to user.
+* Approval prompt before terminal execution.
+* Deny command.
+* Modify command before running.
+* Auto-run configuration.
+* Run in Sandbox mode.
+* Ask Every Time mode.
+* Run Everything mode.
+* Terminal command allowlist.
+* Network access controls.
+* Sandbox on macOS/Linux/Windows with requirements.
+* Read filesystem access.
+* Workspace write access.
+* Network blocked/configurable in sandbox.
+* Temporary directory access.
+* Protected `.cursor` directory controls.
+* Command allowlist.
+* MCP allowlist.
+* Browser protection.
+* File-deletion protection.
+* Dotfile protection.
+* External-file protection.
+* Enterprise enforcement for sandbox/auto-run/delete/MCP controls.
+* Environment variables that indicate sandbox context.
+* Docker pattern support.
+* Standalone CLI sharing similar agent behavior. ([Cursor][17])
+
+---
+
+## G. Browser and visual/web-app testing features
+
+Cursor has browser tooling that can open pages, navigate, click, fill forms, take screenshots, read page content, access local servers/public sites/logins, and use console/network information. Docs also describe visual editing, accessibility auditing, design-to-code, screenshot comparison, session persistence, token auth, tab isolation, and enterprise origin allowlists. ([Cursor][18])
+
+**Browser features:**
+
+* Open browser from Agent.
+* Navigate URLs.
+* Click.
+* Double-click.
+* Right-click.
+* Hover.
+* Type.
+* Fill forms.
+* Scroll.
+* Take screenshots.
+* Read page content.
+* Use local dev servers.
+* Use public websites.
+* Use authenticated sessions.
+* Console log access.
+* Network traffic access.
+* Visual layout inspection.
+* Position/layout analysis.
+* Dimensions analysis.
+* Color analysis.
+* Appearance analysis.
+* Theme testing.
+* Apply visual changes back to code.
+* Select multiple elements.
+* Text-change support.
+* Parallel agents with hot reload.
+* Session persistence.
+* Cookies/localStorage/IndexedDB per workspace.
+* Web development testing.
+* WCAG accessibility auditing.
+* Automated browser testing.
+* Design-to-code.
+* Screenshot comparison.
+* Token authentication.
+* Tab isolation.
+* Manual/allowlisted/auto-run approvals.
+* Allow/block lists.
+* Enterprise origin allowlists. ([Cursor][19])
+
+---
+
+## H. Agents Window and multi-agent workflow
+
+The Agents Window is an agent-first interface across repositories/environments such as local, cloud, and remote SSH. Cursor docs describe parallel agents, development-environment control, multi-workspace use, diff review, commits/PRs, cloud handoff, worktrees, and integrations with web/mobile/Slack/GitHub/Linear. ([Cursor][20])
+
+**Agents Window features:**
+
+* Unified agent-first interface.
+* Local, cloud, and remote SSH environments.
+* Parallel agent execution.
+* Multi-workspace support.
+* File search.
+* Project search.
+* New diffs view.
+* Review changes.
+* Commit changes.
+* Manage PRs.
+* Parallel Cloud Agents.
+* Web access.
+* Mobile access.
+* Slack/GitHub/Linear access.
+* Local-to-cloud handoff.
+* Cloud-to-local handoff.
+* Worktree integration.
+* Editor switchback.
+* Enterprise rollout controls.
+
+---
+
+## I. Agent Review and code review features
+
+Cursor includes local Agent Review and Bugbot. Agent Review reviews local changes inside Cursor, can run automatically after an agent task or manually, and supports Quick vs Deep review. Bugbot reviews pull requests for bugs, security issues, and quality problems, can be triggered automatically or manually, uses PR comments as context, and can spawn Cloud Agent autofixes. ([Cursor][21])
+
+**Review features:**
+
+* Local changes review inside Cursor.
+* Automatic review after agent task.
+* Manual review through command/source control.
+* Quick review.
+* Deep review.
+* PR review through Bugbot.
+* Bug detection.
+* Security issue detection.
+* Quality issue detection.
+* Manual Bugbot trigger.
+* Automatic Bugbot trigger.
+* PR comment context.
+* Fix links to Cursor/Web.
+* GitHub setup.
+* GitLab setup.
+* Personal repo settings.
+* Team repo settings.
+* Only-mentioned setting.
+* Once-per-PR setting.
+* Draft PR behavior.
+* Team rules for Bugbot.
+* Merge-order awareness.
+* `BUGBOT.md` rules.
+* Root/nested Bugbot rules.
+* Learned Bugbot rules.
+* Manual Bugbot rules.
+* Rule analytics.
+* Autofix via Cloud Agent.
+* Push fixes to existing branch.
+* Push fixes to new branch.
+* PR comments for autofix.
+* MCP support for Bugbot.
+* Admin Config API.
+* Bugbot pricing/usage settings. ([Cursor][22])
+
+---
+
+## J. Git and source-control features
+
+Cursor adds AI features on top of standard source control. It can generate commit messages, resolve merge conflicts in chat, add “Made with Cursor” attribution trailers to commits/PRs, and support Cursor Blame for AI-vs-human attribution. Enterprise admins can disable commit attribution globally. ([Cursor][23])
+
+**Git features:**
+
+* Source Control panel.
+* AI commit message generation.
+* Diff-aware commit messages.
+* Repo-history-aware commit messages.
+* Merge conflict resolution in chat.
+* Agent-created commits.
+* Agent-created PRs.
+* Optional `Made with Cursor` attribution.
+* Enterprise global attribution disable.
+* Cursor Blame.
+* AI vs human line attribution.
+* Tab/Agent/Human attribution categories.
+* Model tracking.
+* Conversation summaries.
+* Contribution breakdown.
+* Ghost text/file blame view.
+* Local cache.
+* Multi-workspace independent Agent/git context.
+
+---
+
+## K. Worktrees
+
+Cursor supports isolated Git worktrees so agents can work on separate tasks/files/dependencies/changes. Docs mention commands to create, apply, delete, and run “best-of-n” worktrees across models. ([Cursor][24])
+
+**Worktree features:**
+
+* Isolated Git checkouts.
+* One task per worktree.
+* Separate files/dependencies/changes.
+* Review worktree output.
+* Commit worktree output.
+* PR from worktree.
+* Bring changes back.
+* `.cursor/worktrees.json`.
+* Setup commands per OS.
+* Cleanup interval.
+* Max worktree settings.
+* `/worktree`.
+* `/apply-worktree`.
+* `/delete-worktree`.
+* `/best-of-n`.
+* CLI `--worktree`.
+
+---
+
+## L. Canvases
+
+Cursor Canvases are interactive artifacts for dashboards, analysis, audits, reports, and similar outputs. They render next to chat, can be reopened, edited, iterated, rerun, listed, and packaged into skills. ([Cursor][25])
+
+**Canvas features:**
+
+* Interactive artifacts.
+* Dashboards.
+* Analysis outputs.
+* Audits.
+* Reports.
+* Render next to chat.
+* Reopen canvas.
+* Edit canvas.
+* Iterate canvas.
+* Rerun canvas.
+* Canvas list.
+* Open from cards.
+* Open from command palette.
+* Open from Agents Window tab.
+* Package canvas workflows as skills.
+
+---
+
+## M. Customization: rules, skills, subagents, hooks, plugins, MCP
+
+Cursor’s customization system is large. It includes persistent rules, portable skills, specialized subagents, hook scripts, plugins, team marketplaces, and MCP integrations. ([Cursor][26])
+
+### Rules
+
+* Project rules.
+* User rules.
+* Team rules.
+* `AGENTS.md` support.
+* Persistent prompt-level context.
+* `.cursor/rules`.
+* `.md` and `.mdc` rule files.
+* Frontmatter metadata.
+* Description.
+* Globs.
+* `alwaysApply`.
+* Always Apply rules.
+* Apply Intelligently rules.
+* Apply to Specific Files rules.
+* Apply Manually rules.
+* `/create-rule`.
+* Rule management in settings.
+* Rule best practices.
+* Rule updating.
+* Team rules.
+* Required/enforced rules.
+* Optional rules.
+* Glob patterns.
+* Precedence: Team > Project > User.
+* Remote rules via GitHub.
+* Root and nested `AGENTS.md`.
+* Rules do not affect Tab/Inline Edit. ([Cursor][27])
+
+### Skills
+
+* Portable workflows.
+* Version-controlled workflows.
+* Actionable instructions.
+* Progressive disclosure.
+* Auto-discovery.
+* Manual `/skill-name` invocation.
+* `.agents/skills`.
+* `.cursor/skills`.
+* User/global skill locations.
+* Claude/Codex compatibility.
+* `SKILL.md`.
+* Scripts.
+* References.
+* Assets.
+* Frontmatter fields.
+* Disable model invocation.
+* Bash/Python/JavaScript scripts.
+* Optional directories.
+* Skill viewer.
+* Install from GitHub.
+* `/migrate-to-skills` from dynamic rules/slash commands. ([Cursor][28])
+
+### Subagents
+
+* Specialized assistants.
+* Own context window.
+* Parallel execution.
+* Custom prompts.
+* Custom tools.
+* Custom models.
+* Reusable across editor/CLI/Cloud.
+* Automatic launch.
+* Foreground execution.
+* Background execution.
+* Built-in Explore subagent.
+* Built-in Bash subagent.
+* Built-in Browser subagent.
+* Context isolation.
+* Cost/control benefits.
+* Custom subagent files in `.cursor/agents`.
+* Compatibility with `.claude/agents` and `.codex/agents`.
+* Frontmatter: name, description, model, readonly, background.
+* Model inheritance.
+* Fast model option.
+* Specific model option. ([Cursor][29])
+
+### Hooks
+
+* Observe agent loop.
+* Control agent loop.
+* Extend agent loop.
+* Custom scripts.
+* Formatters.
+* Analytics.
+* PII/secrets scanning.
+* Risky-operation gate.
+* Subagent control.
+* Context injection.
+* Agent events.
+* Tab events.
+* Session start/end hooks.
+* Pre/post tool-use hooks.
+* Subagent hooks.
+* Shell/MCP hooks.
+* Before-read hooks.
+* After-file-edit hooks.
+* Before-submit-prompt hooks.
+* Pre-compact hooks.
+* Stop hooks.
+* After-agent-response/thought hooks.
+* Before Tab file read.
+* After Tab file edit.
+* Cloud Agent repo hooks.
+* Enterprise team hooks.
+* Command-based hooks.
+* Prompt-based hooks.
+* Exit-code control.
+* Allow/deny/ask permissions.
+* Team distribution through MDM/server-side controls. ([Cursor][30])
+
+### Plugins and marketplaces
+
+* Plugins package rules.
+* Plugins package skills.
+* Plugins package agents.
+* Plugins package commands.
+* Plugins package MCP servers.
+* Plugins package hooks.
+* Official marketplace.
+* Community cursor.directory.
+* Manual review.
+* Git repo-based plugins.
+* Team marketplaces.
+* Required plugins.
+* Optional plugins.
+* SCIM group distribution.
+* GitHub repo marketplace import.
+* Project/user install scopes.
+* MCP install deeplinks.
+* MCP toggling.
+* Rule/skill management.
+* Extension API registration.
+* `.cursor-plugin/plugin.json`.
+* Local plugin testing.
+* Submit/review flow.
+* Open-source plugin requirement/review. ([Cursor][26])
+
+### MCP
+
+* Model Context Protocol support.
+* External tool/data connection.
+* stdio transport.
+* SSE transport.
+* Streamable HTTP transport.
+* Tools.
+* Prompts.
+* Resources.
+* Roots.
+* Elicitation.
+* Apps.
+* One-click marketplace install.
+* OAuth.
+* Custom `mcp.json`.
+* Node MCP servers.
+* Python MCP servers.
+* HTTP MCP servers.
+* Static OAuth.
+* Extension API support.
+* Project config.
+* Global config.
+* Config interpolation.
+* Environment-variable auth.
+* Agent automatic MCP tool use.
+* Explicitly ask for a specific MCP tool.
+* Auto-run/permissions.
+* Tool response views.
+* Images as context.
+* Security review.
+* Debug logs.
+* Disable server.
+* Update server.
+* Sensitive-data best practices. ([Cursor][31])
+
+---
+
+## N. Cloud Agents
+
+Cloud Agents run in isolated environments and can work in parallel without requiring the local machine. They can use computer/browser/MCP capabilities, access from web/desktop/Slack/GitHub/Linear/API, clone GitHub/GitLab repos, work on branches, and push changes. ([Cursor][32])
+
+**Cloud Agent features:**
+
+* Isolated cloud environments.
+* Parallel execution.
+* Local machine not required.
+* Own VM.
+* Build/test/interact.
+* Computer use.
+* Browser use.
+* MCP support.
+* Access from Web.
+* Access from Desktop Cloud dropdown.
+* Access from Slack.
+* Access from GitHub through `@cursor`.
+* Access from Linear.
+* Access from API.
+* PWA on iOS/Android.
+* GitHub clone.
+* GitLab clone.
+* Separate branch creation.
+* Push changes.
+* Curated cloud model set.
+* Cloud agents always use Max Mode.
+* HTTP MCP support.
+* stdio MCP support.
+* OAuth MCP support.
+* Hook support.
+* API-priced billing.
+* Spend limits. ([Cursor][32])
+
+### Cloud environment setup
+
+* Isolated Ubuntu environment.
+* Agent-driven environment snapshot.
+* Dockerfile environment.
+* Repo-level environment resolution.
+* Personal environment resolution.
+* Team environment resolution.
+* Environment update command.
+* GitHub connection.
+* GitLab connection.
+* Secrets.
+* VM snapshot saving.
+* `.cursor/environment.json`.
+* Computer-use Dockerfile support.
+* Resource limits.
+* Update/start/terminal controls.
+* `AGENTS.md` cloud instructions.
+* Secrets encrypted at rest with KMS.
+* Environment variables.
+* Redacted secret scanning.
+* Secret redaction.
+* TOTP.
+* Monorepo `.env` support.
+* Docker support.
+* Tailscale support. ([Cursor][33])
+
+### Cloud capabilities
+
+* Full desktop computer use.
+* Mouse/keyboard use.
+* Dev server use.
+* Browser UI flow execution.
+* Screenshots.
+* Videos.
+* Logs.
+* PR artifacts.
+* MCP tools.
+* OAuth.
+* Custom HTTP MCP.
+* Custom stdio MCP.
+* Encrypted/redacted fields.
+* HTTP MCP recommended/proxied.
+* Auto-fix CI failures for Cloud-Agent-created PRs.
+* GitHub Actions support.
+* Comment commands.
+* Team availability toggles. ([Cursor][34])
+
+### My Machines
+
+* Run Cloud Agents on user laptop/devbox/remote VM.
+* Agent loop in cloud, tool calls local.
+* Outbound-only connectivity.
+* No inbound requirement.
+* CLI worker.
+* Named worker.
+* Worker directory.
+* API key.
+* Artifact upload.
+* Outbound host requirements.
+* Command MCP runs on user machine.
+* HTTP/SSE backend.
+* Debug preflight. ([Cursor][35])
+
+### Self-hosted pool
+
+* Team-managed infrastructure.
+* Workers.
+* Labels/routing.
+* Outbound-only network.
+* Default concurrency limits.
+* API keys.
+* Pool worker.
+* Idle timeout.
+* Pool names.
+* Dashboard selector.
+* Hooks.
+* Labels.
+* MCP.
+* Artifacts/networking. ([Cursor][36])
+
+### Cloud security/network
+
+* Privacy Mode support.
+* Secrets encrypted in rest/transit.
+* Redacted secret protections.
+* Signed commits.
+* HSM Ed25519 verified commits.
+* AWS isolated VMs.
+* Internet access by default.
+* Egress controls.
+* Auto-run terminal commands.
+* Allow-all/default+allowlist/allowlist-only network modes.
+* Artifact S3 host requirements.
+* User/team settings.
+* Enterprise lock.
+* Shared sandbox/network settings.
+* IP ranges JSON API.
+* Git egress proxy stable IPs. ([Cursor][37])
+
+### Cloud settings
+
+* Default model.
+* Default repository.
+* Default base branch.
+* Network modes.
+* Security setting summaries.
+* External channel sharing settings.
+* Team follow-up settings.
+* Long-running agents.
+* Computer-use toggles.
+* Lateral movement risk controls. ([Cursor][38])
+
+### Cloud Agent API
+
+* Basic auth.
+* API key authentication.
+* OpenAPI docs.
+* List agents.
+* Agent status.
+* Conversation retrieval.
+* Artifact list/download.
+* Launch agent with prompt.
+* Image input.
+* Model selection.
+* Source/target branch options.
+* Webhook options.
+* Follow-up messages.
+* Stop agent.
+* Delete agent.
+* `/v0/me`.
+* List models.
+* List repositories.
+* Webhook status changes.
+* HMAC headers.
+* Best-practice webhook verification. ([Cursor][39])
+
+---
+
+## O. Automations
+
+Cursor Automations run Cloud Agents in the background on schedules or events. They can be created from marketplace/templates and tied to GitHub, Slack, webhooks, Linear, Sentry, and PagerDuty triggers. ([Cursor][40])
+
+**Automation features:**
+
+* Background Cloud Agent runs.
+* Scheduled tasks.
+* Event-triggered tasks.
+* Maintenance workflows.
+* Security review workflows.
+* Slack bug triage.
+* Sentry issue handling.
+* Marketplace automations.
+* Template automations.
+* Trigger selection.
+* Prompt selection.
+* Tool selection.
+* Schedule/cron trigger.
+* GitHub draft PR trigger.
+* GitHub PR opened trigger.
+* GitHub PR pushed trigger.
+* GitHub label trigger.
+* GitHub merge trigger.
+* GitHub comment trigger.
+* GitHub push trigger.
+* GitHub CI trigger.
+* Slack public message trigger.
+* Slack channel-created trigger.
+* Webhook POST trigger.
+* Webhook API key.
+* Linear issue trigger.
+* Linear status trigger.
+* Linear end-of-cycle trigger.
+* Sentry issue trigger.
+* PagerDuty incident trigger.
+* Open PR tool.
+* Comment tool.
+* Review PR tool.
+* Approve PR tool.
+* Request changes tool.
+* Request reviewers tool.
+* Send/read Slack messages.
+* MCP tools.
+* Memories for persistence.
+* Model setting.
+* Environment setting.
+* Enabled/disabled setting.
+* Private/team-visible/team-owned permissions.
+* Automation identity.
+* Prompting best practices.
+
+---
+
+## P. Integrations
+
+Cursor supports Slack, Linear, GitHub, GitLab, JetBrains, Xcode, deeplinks, and Cursor Blame integrations. ([Cursor][41])
+
+### Slack
+
+* `@cursor` from Slack.
+* Cloud Agent launch from Slack.
+* GitHub dependency.
+* Default repo.
+* Pricing/usage through Cursor.
+* Privacy controls.
+* Repo selection in prompt.
+* Model selection in prompt.
+* Prompt/follow-up command.
+* Settings command.
+* Branch option.
+* Auto-PR option.
+* Force new agent.
+* List agents.
+* Thread context.
+* Context menu integration.
+* Status updates.
+* PR links.
+* Manage agents from Slack.
+* Routing rules.
+* Keyword routing.
+* Channel defaults.
+* Slack permissions model. ([Cursor][41])
+
+### Linear
+
+* Delegate Linear issues to Cursor.
+* `@Cursor` comments.
+* Real-time status.
+* PR links.
+* Follow-ups.
+* Issue text config: repo/model/branch.
+* Issue labels.
+* Project labels.
+* Repo selection priority.
+* Triage rules. ([Cursor][42])
+
+### GitHub
+
+* GitHub app connection.
+* Cloud Agents.
+* Bugbot.
+* GitHub Enterprise Server support.
+* Networking/IP allowlisting.
+* Registered app setup.
+* Private networking/reverse proxy tunnel.
+* Repo access permissions.
+* PR permissions.
+* Issue permissions.
+* Checks/status permissions.
+* Workflow permissions. ([Cursor][43])
+
+### GitLab
+
+* GitLab.com support.
+* Self-hosted GitLab support.
+* Paid GitLab plan requirement.
+* Team/Enterprise setup.
+* Networking.
+* OAuth app/scopes.
+* Private/reverse proxy setup.
+* Bugbot support.
+* Cloud Agent support. ([Cursor][44])
+
+### JetBrains
+
+* Agent Client Protocol integration.
+* IntelliJ support.
+* PyCharm support.
+* WebStorm support.
+* Paid plan requirement.
+* AI Assistant requirement.
+* Model selection.
+* Codebase understanding.
+* File edit.
+* Terminal command support. ([Cursor][45])
+
+### Xcode
+
+* Xcode 26.3+ MCP server.
+* Build.
+* Test.
+* Preview.
+* Documentation search.
+* Xcode Tools setup.
+* MCP bridge.
+* File operations.
+* Xcode read/write/update/grep/glob/ls/mkdir/rm/mv tools.
+* Build project.
+* Get build log.
+* Run all tests.
+* Run selected tests.
+* Get test list.
+* Diagnostics.
+* Render preview.
+* Execute snippet.
+* List Xcode windows.
+* CLI with Xcode. ([Cursor][46])
+
+### Deeplinks
+
+* Share prompts.
+* Share commands.
+* Share rules.
+* Review/confirm before action.
+* No automatic execution.
+* Character limit.
+* Web and desktop link formats. ([Cursor][47])
+
+---
+
+## Q. CLI
+
+Cursor has a standalone CLI/terminal agent. It supports interactive mode, print/headless mode, Agent/Plan/Ask modes, model selection, cloud handoff, sessions, resume/continue, sandbox controls, Max Mode, sudo password protection, MCP, ACP, worktrees, and script/CI usage. ([Cursor][48])
+
+**CLI features:**
+
+* Terminal-based coding agent.
+* Write code.
+* Review code.
+* Modify code.
+* Interactive session.
+* Print mode for scripts.
+* CI usage.
+* Agent mode.
+* Plan mode.
+* Ask mode.
+* Model selection.
+* Cloud handoff with `&`.
+* Session list.
+* Resume session.
+* Continue previous session.
+* Sandbox controls.
+* Max Mode.
+* Secure sudo prompt; model does not see password.
+* MCP auto-detection from `mcp.json`.
+* ACP server.
+* Rules support.
+* `AGENTS.md` support.
+* `CLAUDE.md` support.
+* Review shortcut.
+* `@` context.
+* `/compress`.
+* CLI worktrees.
+* History.
+* Command approval.
+* Non-interactive output.
+* JSON output.
+* Text output.
+* Stream JSON.
+* Full write access in print mode when allowed.
+* Shell mode.
+* Shell output display.
+* Login shell/current working directory/environment usage.
+* Command timeout.
+* No interactive prompts in shell mode.
+* Output expansion. ([Cursor][49])
+
+### CLI slash commands
+
+* `/plan`
+* `/ask`
+* `/model`
+* `/auto-run`
+* `/sandbox`
+* `/max-mode`
+* `/new-chat`
+* `/vim`
+* `/help`
+* `/feedback`
+* `/resume`
+* `/usage`
+* `/about`
+* `/copy-request-id`
+* `/copy-conversation-id`
+* `/logout`
+* `/quit`
+* `/setup-terminal`
+* `/mcp list`
+* `/mcp enable`
+* `/mcp disable`
+* `/rules`
+* `/commands`
+* `/compress` ([Cursor][50])
+
+### CLI parameters/commands
+
+* `--version`
+* `--api-key`
+* `CURSOR_API_KEY`
+* `--header`
+* `--print`
+* `--output-format`
+* `--stream-partial-output`
+* `--resume`
+* `--continue`
+* `--model`
+* `--mode`
+* `--plan`
+* `--list-models`
+* `--force`
+* `--yolo`
+* `--sandbox`
+* `--approve-mcps`
+* `--trust`
+* `--workspace`
+* `--worktree`
+* `--help`
+* `agent`
+* `login`
+* `logout`
+* `status` / `whoami`
+* `about`
+* `models`
+* `mcp`
+* `acp`
+* `update`
+* `ls`
+* `resume`
+* `create-chat`
+* `generate-rule` / `rule`
+* `install-shell-integration`
+* `uninstall-shell-integration`
+* MCP login/list/list-tools/enable/disable. ([Cursor][51])
+
+### ACP
+
+* Agent Client Protocol over JSON-RPC stdio.
+* Auth.
+* Sessions.
+* Modes.
+* Permissions.
+* MCP project/user config.
+* Extension methods: ask question, create plan, update todos, task, generate image.
+* JetBrains integration.
+* Neovim/Avante integration.
+* Zed integration.
+* Custom editor integration. ([Cursor][52])
+
+---
+
+## R. Models, pricing, and usage
+
+Cursor’s public pricing docs describe usage pools, included usage, model-specific pricing, Auto, Composer, API usage, Max Mode cost behavior, individual/team/enterprise plans, unlimited tab completions on paid individual tiers, Bugbot/Cloud Agent availability, and privacy-mode handling. ([Cursor][53])
+
+**Model/pricing/usage features:**
+
+* Auto usage pool.
+* Composer usage pool.
+* API usage pool.
+* Auto model option.
+* Cursor Composer model.
+* Third-party model options.
+* Model table with capabilities/pricing.
+* Individual plans.
+* Hobby/free plan.
+* Pro.
+* Pro Plus.
+* Ultra.
+* Teams.
+* Enterprise.
+* Included API usage.
+* Cursor Token Rate on teams.
+* Usage-based pricing.
+* Max Mode cost behavior.
+* Unlimited tab completions on paid plans.
+* Extended agent usage.
+* Bugbot availability.
+* Cloud Agents availability.
+* Privacy Mode.
+* Provider zero-data-retention handling.
+* Model hosting-region details.
+* Team/Enterprise admin controls.
+
+---
+
+## S. Account, team, dashboard, analytics, and billing
+
+Cursor’s Team/Enterprise dashboard covers billing, usage-based pricing, team management, privacy settings, team marketplaces, Bedrock IAM role, SSO, Admin API keys, active sessions, invite codes, REST API endpoints, model controls, spend limits, auto-run configuration, repository blocklist, MCP configuration, ignore patterns, `.cursor` protection, AI Code Tracking API, audit logs, integrations, Cloud Agents, Bugbot, Active Directory, usage, billing, and invoices. ([Cursor][54])
+
+**Team/admin features:**
+
+* Dashboard overview.
+* Billing access.
+* Usage-based pricing setup.
+* Team management.
+* Usage statistics.
+* Recent changes.
+* Team-wide preferences.
+* Security settings.
+* Privacy settings.
+* Zero data retention policies.
+* Team-wide privacy enforcement.
+* Spending limits.
+* Admin-only usage setting modification.
+* Team marketplaces.
+* GitHub-imported custom marketplaces.
+* Bedrock IAM role.
+* SSO setup.
+* Cursor Admin API keys.
+* Active sessions.
+* Invite codes.
+* REST API endpoints.
+* Model access control.
+* Enhanced spend limits.
+* Per-member spend limits.
+* Directory-group spend limits.
+* Auto-run configuration.
+* Repository blocklist.
+* MCP configuration.
+* Cursor Ignore configuration.
+* `.cursor` directory protection.
+* AI Code Tracking API.
+* Audit Log.
+* Integrations management.
+* Cloud Agents monitoring.
+* Bugbot access.
+* Active Directory management.
+* Usage tracking.
+* Invoices.
+* Payment/billing history. ([Cursor][54])
+
+### Members and roles
+
+* Member role.
+* Admin role.
+* Unpaid Admin role.
+* Role-based permissions.
+* Invite by email.
+* Invite link.
+* SSO auto-join.
+* Domain matching.
+* Restrict invites to verified domains.
+* Remove members.
+* Change roles.
+* Domain settings.
+* Usage controls.
+* Monthly spending limits.
+* Team-wide usage monitoring.
+* Billing seat handling.
+* Monthly/yearly billing.
+* Yearly discount flow. ([Cursor][55])
+
+### SSO and SCIM
+
+* SAML 2.0 SSO.
+* Team and Enterprise SSO.
+* Existing IdP authentication.
+* Okta/Azure AD/Google Workspace/OneLogin-style providers.
+* JIT provisioning.
+* Domain verification.
+* SSO enforcement.
+* Multiple domains.
+* SCIM 2.0 provisioning.
+* Automatic user addition.
+* Automatic user removal.
+* Directory group sync.
+* Real-time sync.
+* Group-based spend limits.
+* IdP-managed users/groups.
+* Read-only display in Cursor.
+* Highest spend limit wins for users in multiple groups. ([Cursor][56])
+
+### Analytics
+
+* Web Dashboard analytics.
+* Team/admin visibility model.
+* CSV download.
+* Analytics API for Enterprise.
+* User/group/date filters.
+* Timezone filter.
+* Weekend display toggle.
+* AI Code Tracking in commits.
+* On-device AI detection.
+* Metadata-only line counts.
+* AI Share of Committed Code.
+* Agent Edits.
+* Tab Completions.
+* Messages Sent.
+* Active Users.
+* Daily Usage.
+* Usage Leaderboard.
+* Repository Insights.
+* Conversation Insights.
+* Work category classification.
+* Work type classification.
+* Complexity classification.
+* Specificity classification.
+* Custom Enterprise categories.
+* Compare teams/developers.
+* Cloud Agent usage.
+* Agents Created.
+* Pull Requests.
+* Lines of Code.
+* Top Cloud Agent repositories.
+* Top Cloud Agent users.
+* Client Versions. ([Cursor][57])
+
+### Enterprise billing and service accounts
+
+* Pooled usage.
+* Shared committed usage pool.
+* Dynamic spend limits.
+* Spend alerts.
+* Cumulative contract-period tracking.
+* Admin-only pooled usage controls.
+* Billing groups.
+* Reporting.
+* Internal chargebacks.
+* Budgeting.
+* Assign member to one billing group.
+* Unassigned group.
+* Historical usage attribution.
+* SCIM-synced billing groups.
+* API-managed billing groups.
+* CSV billing-group assignment.
+* Manual assignment.
+* Rename/delete billing groups.
+* Service accounts.
+* Non-human automation accounts.
+* API authentication.
+* CLI authentication.
+* Cloud Agent invocation.
+* No extra seat.
+* Usage from team pool.
+* Admin visibility.
+* Repository access through team GitHub app.
+* API-key creation.
+* Key rotation.
+* Archive service account.
+* Auditability. ([Cursor][58])
+
+---
+
+## T. Enterprise security, privacy, governance, and deployment
+
+Cursor’s Enterprise docs cover security, compliance, administrative controls, identity, Privacy Mode, data governance, network setup, model controls, integrations, audit logs, deployment patterns, MDM, service accounts, and billing groups. ([Cursor][59])
+
+### Privacy and data governance
+
+* Indexing flow.
+* Temporary code sent for embedding generation.
+* Original code discarded after embedding generation.
+* Embeddings stored.
+* Obfuscated file paths.
+* Line numbers.
+* Local code lookup.
+* Vector DB does not store raw code.
+* LLM request flow.
+* Privacy Mode.
+* Provider zero-data-retention agreements.
+* Code not stored by model providers in Privacy Mode.
+* Code not used for training in Privacy Mode.
+* Enterprise Privacy Mode default.
+* Cloud Agents as code-storage-required feature.
+* Data residency/governance docs. ([Cursor][60])
+
+### Network and encryption
+
+* Proxy support.
+* HTTP/2 bidirectional streaming.
+* HTTP/1.1 SSE fallback.
+* Zscaler-style proxy handling.
+* SSL inspection/DLP guidance.
+* Recommended domains to bypass SSL inspection.
+* Connectivity testing.
+* HTTP/1.1 streaming test.
+* HTTP/2 streaming test.
+* IP/domain allowlisting.
+* VPC peering not currently offered.
+* Local agents inherit machine network/VPC/VPN access.
+* TLS 1.2+.
+* TLS to third-party AI providers.
+* Certificate pinning for critical services.
+* AES-256 at rest.
+* Encrypted vector DB.
+* Encrypted Cloud Agent code storage.
+* Key rotation.
+* Customer Managed Encryption Keys.
+* LLM gateway guidance.
+* Cloud Agents network limitations. ([Cursor][61])
+
+### LLM safety and controls
+
+* Deterministic security controls.
+* LLM steering mechanisms.
+* Terminal command restrictions.
+* Approval prompts.
+* Auto-approval risk warnings.
+* Enterprise auto-run policies.
+* Command allowlists.
+* Enforcement hooks.
+* Prompt scanning.
+* File-read scanning.
+* Generated-code scanning.
+* Terminal command blocking.
+* Secret redaction hooks.
+* `.cursorignore`.
+* Sensitive-file protection.
+* `.cursor` directory protection.
+* Rules/Commands as steering.
+* Agent sandboxing. ([Cursor][62])
+
+### Model and integration management
+
+* Enterprise model access control.
+* New model opt-in for enterprise.
+* Restrict personal API keys / BYOK controls.
+* MCP server trust management.
+* MCP allowlist.
+* Server/tool allowlist syntax.
+* Command-based MCP matching.
+* URL-based MCP matching.
+* Repository blocklist.
+* Slack integration control.
+* GitHub/GHES/GitLab control. ([Cursor][63])
+
+### Compliance and monitoring
+
+* Audit logs.
+* Authentication events.
+* User management events.
+* API key events.
+* Team settings events.
+* Repository management events.
+* Directory group events.
+* Privacy setting events.
+* Team rule events.
+* Team command events.
+* No agent responses/generated code content in audit logs.
+* Dashboard audit log access.
+* Streaming audit logs.
+* SIEM integrations.
+* Webhook endpoints.
+* S3 buckets.
+* Log aggregators.
+* JSON log format.
+* Search/filter audit logs.
+* CSV export.
+* Hooks for compliance logging.
+* SOC 2 Type II.
+* GDPR. ([Cursor][64])
+
+### Deployment
+
+* Editor deployment through MDM.
+* CLI deployment.
+* Jamf/Intune-style deployment.
+* Windows Group Policy.
+* macOS configuration profiles.
+* Linux JSON policies.
+* Allowed extensions policy.
+* Allowed team ID policy.
+* Custom extension gallery URL.
+* Disable HTTP/2 policy.
+* Update mode policy.
+* Workspace trust policy.
+* Managed `permissions.json`.
+* Terminal allowlist.
+* MCP allowlist.
+* Policy precedence.
+* Windows ADMX/ADML.
+* Silent Windows install/update flags.
+* Auto-update controls. ([Cursor][65])
+
+---
+
+# 3. Feature grouping by product surface
+
+| Product surface   | Main features                                                                                               |
+| ----------------- | ----------------------------------------------------------------------------------------------------------- |
+| Desktop editor    | VS Code-like editor, extensions, themes, keybindings, terminal, git, settings, folders/workspaces           |
+| AI coding         | Tab, Inline Edit, Ask, Agent, Plan, Debug, Max Mode                                                         |
+| Agent tools       | Search, read/write files, terminal, browser, web, image input/output, MCP, rules, hooks, skills, subagents  |
+| Code intelligence | Semantic index, Instant Grep, `@` context, `.cursorignore`, codebase understanding                          |
+| Review            | Agent Review, Bugbot, PR review, autofix, Cursor Blame                                                      |
+| Cloud             | Cloud Agents, My Machines, self-hosted pools, cloud VMs, artifacts, computer use, cloud API                 |
+| Automation        | Scheduled/event-based agents, GitHub/Slack/Linear/Sentry/PagerDuty/webhook triggers                         |
+| CLI               | Interactive/headless agent, scripting, CI, ACP, MCP, worktrees, slash commands                              |
+| Integrations      | Slack, Linear, GitHub, GitLab, JetBrains, Xcode, deeplinks                                                  |
+| Enterprise        | SSO, SCIM, RBAC, MDM, model controls, privacy mode, audit logs, analytics, billing groups, service accounts |
+
+---
+
+# 4. Reverse-engineering suggestion — ethical product decomposition
+
+Do **not** reverse engineer Cursor by decompiling binaries, bypassing license checks, stealing proprietary prompts, intercepting private API traffic, cloning branding/assets, or violating terms. The useful and safe route is **functional reverse engineering**: study public behavior, docs, workflows, and UX patterns, then build your own clean-room implementation.
+
+## Safe reverse-engineering plan
+
+### Phase 1 — Public feature matrix
+
+Create a spreadsheet with these columns:
+
+* Feature name.
+* Product surface.
+* User problem.
+* Trigger/entry point.
+* Inputs.
+* Outputs.
+* Required permissions.
+* Required backend service.
+* Local vs cloud.
+* Enterprise control needed.
+* MVP priority.
+* Complexity.
+* Competitive moat.
+
+Start with the categories above: Tab, Agent, Plan, Debug, browser, terminal, MCP, Cloud Agents, Bugbot, Automations, CLI, enterprise controls.
+
+### Phase 2 — User-flow decomposition
+
+Map the main flows:
+
+1. Open repo → index codebase → ask question.
+2. Select code → Cmd+K → apply edit → review diff.
+3. Prompt Agent → search/read/edit → run tests → checkpoint → accept/reject.
+4. Plan Mode → generate plan → approve → execute.
+5. Debug Mode → reproduce → instrument → fix → verify.
+6. Cloud Agent → clone repo → create branch → implement → open PR.
+7. Bugbot → inspect PR → comment issue → launch autofix.
+8. Slack/Linear/GitHub → trigger cloud run → PR result.
+9. Enterprise admin → enforce settings → monitor analytics/audit logs.
+
+### Phase 3 — Clean-room architecture inference
+
+A similar product would likely need these components:
+
+**Client/editor layer**
+
+* VS Code extension or VS Code fork.
+* File tree, editor, diff viewer, source control, terminal.
+* Chat/agent side panel.
+* Inline edit UI.
+* Autocomplete provider.
+* Model picker.
+* Settings/rules/skills UI.
+
+**Local intelligence layer**
+
+* File watcher.
+* Git state reader.
+* Code parser/tree-sitter/LSP integration.
+* Chunker.
+* Embedding generator.
+* Local/remote vector index.
+* Grep/exact search.
+* Context packer.
+* Secret/ignore filter.
+
+**LLM orchestration layer**
+
+* Provider abstraction.
+* Prompt templates.
+* Tool calling.
+* Streaming.
+* Retry/rate-limit handling.
+* Cost accounting.
+* Model routing.
+* Max-context mode.
+* Privacy mode policy.
+* Audit metadata.
+
+**Agent runtime**
+
+* State machine.
+* Planner.
+* Tool executor.
+* File patcher.
+* Diff generator.
+* Terminal executor.
+* Browser executor.
+* Checkpoint manager.
+* Approval gate.
+* Hook engine.
+* Subagent scheduler.
+
+**Cloud layer**
+
+* Ephemeral VM/container runner.
+* Repo clone/auth.
+* Branch/PR automation.
+* Artifact storage.
+* Browser/computer-use environment.
+* Secrets manager.
+* Network policy.
+* Webhook/event triggers.
+* Agent API.
+* Worker pools.
+
+**Enterprise layer**
+
+* Teams/org model.
+* RBAC.
+* SSO/SAML.
+* SCIM.
+* MDM policy ingestion.
+* Admin dashboard.
+* Usage analytics.
+* Audit logs.
+* Model controls.
+* MCP allowlists.
+* Repo blocklists.
+* Spend limits.
+* Billing groups.
+* Service accounts.
+
+---
+
+# 5. Suggested MVP build order if you want to build a Cursor-like product
+
+## MVP 1 — Local AI editor assistant
+
+Build first:
+
+* VS Code extension rather than full editor fork.
+* Chat panel.
+* Repo file reader.
+* Grep search.
+* Basic semantic index.
+* LLM provider abstraction.
+* Inline edit.
+* Diff preview.
+* Accept/reject changes.
+* Basic Tab autocomplete.
+
+This gives the fastest usable product.
+
+## MVP 2 — Agentic editing
+
+Add:
+
+* Tool-calling loop.
+* Multi-file edits.
+* Checkpoints.
+* Terminal execution with approval.
+* Test/lint/build command suggestions.
+* `.aiignore` / `.cursorignore` equivalent.
+* Rules file.
+* Plan Mode.
+* Debug Mode.
+
+This turns the assistant into an agent.
+
+## MVP 3 — Integrations and workflow
+
+Add:
+
+* Git commit message generation.
+* Merge conflict helper.
+* PR review bot.
+* GitHub app.
+* Slack trigger.
+* Linear trigger.
+* CLI agent.
+* MCP support.
+
+This makes the tool fit real engineering workflows.
+
+## MVP 4 — Cloud agents
+
+Add:
+
+* Cloud runner.
+* Repo clone.
+* Branch creation.
+* PR creation.
+* Artifacts/logs.
+* Secrets manager.
+* Webhooks.
+* Scheduled automations.
+* Self-hosted runner option.
+
+This is where operational complexity increases sharply.
+
+## MVP 5 — Enterprise controls
+
+Add:
+
+* SSO.
+* SCIM.
+* RBAC.
+* Admin dashboard.
+* Usage analytics.
+* Audit logs.
+* Model allow/deny list.
+* Repo blocklist.
+* Terminal/MCP allowlists.
+* MDM policies.
+* Billing groups.
+* Service accounts.
+* Privacy/data governance controls.
+
+This is required for selling to larger teams.
+
+---
+
+# 6. What not to copy
+
+Avoid copying:
+
+* Cursor’s brand, UI assets, wording, logos, screenshots, and marketing copy.
+* Proprietary prompts or hidden system instructions.
+* Binary implementation.
+* Private API behavior.
+* License-gated behavior through bypassing auth.
+* Marketplace metadata not intended for reuse.
+* Any extension/plugin code unless open-source license permits it.
+
+Safe to learn from:
+
+* Public docs.
+* Public UI behavior.
+* Standard IDE concepts.
+* Public protocols like MCP/ACP where documented.
+* Open-source editor APIs.
+* Your own clean-room architecture.
+* User interviews and workflow observation.
+
+---
+
+# 7. Practical product opportunity
+
+If your goal is to compete with Cursor, don’t clone everything first. Cursor’s public surface is huge. The best wedge is a narrower product:
+
+**Option A: Enterprise-safe Cursor alternative**
+
+Focus on self-hosting, strict privacy, local models, audit logs, repo blocklists, and deterministic security controls.
+
+**Option B: Cloud-agent automation platform**
+
+Focus only on GitHub/Linear/Sentry-triggered agents that open PRs.
+
+**Option C: AI code review and autofix**
+
+Compete with Bugbot: PR review, bug detection, security findings, one-click autofix.
+
+**Option D: Domain-specific Cursor**
+
+Build for one stack: Laravel, Rails, WordPress, React Native, embedded C, data engineering, etc.
+
+**Option E: Lightweight VS Code agent extension**
+
+Skip custom editor and cloud. Build a strong local agent with excellent indexing, diffs, tests, and safe terminal execution.
+
+My recommendation: **start with Option E + one vertical niche**, then add cloud PR automation once the local agent is trusted.
+
