@@ -1,0 +1,390 @@
+# Master Prompt â€” Build a Fully-Functional Cursor-Style AI Coding Platform Prototype
+
+> **Read this entire prompt before writing any code. This is a single, atomic instruction set. Do not skip any section.**
+
+---
+
+## 0. Mission
+
+Build a **fully-functional, end-to-end interactive prototype** of a Cursor-style AI coding platform. The goal is a *clickable, live-testable* product where **every sidebar item, every dashboard widget, every button, every form, every modal, and every table is wired to working logic backed by realistic sample data**. This is **not** a static mockup, not a Figma export, and not a "coming soon" shell.
+
+**Hard rules â€” non-negotiable:**
+
+1. **No feature is allowed to be skipped, stubbed, or marked "TODO".** If a feature is listed in section 4 below, it must be implemented and reachable from the UI.
+2. **No "Coming Soon", "Not implemented", or empty placeholder pages.** Every route renders real UI with real (sample) data.
+3. **Every clickable element must do something visible.** Buttons trigger state changes, open modals, update tables, push toast notifications, or navigate.
+4. **Every form must validate and submit**, persist to in-memory store, and reflect changes immediately in the relevant lists, dashboards, and analytics.
+5. **Every list/table must support** sort, filter, search, pagination, and row-level actions (view, edit, delete, duplicate).
+6. **Every chart/metric on dashboards must read from the same sample data store** so changes propagate (e.g., creating a new Cloud Agent increments the "Active Agents" KPI).
+7. **All features must be live-testable without backend setup.** Use an in-memory data layer or local storage so the reviewer can refresh and re-test.
+8. **Provide seed sample data for every entity** (see section 3). Empty-state screens are allowed only when the user explicitly deletes all records.
+
+If at any point you feel tempted to write "this would be implemented in production" â€” **stop and implement it instead**. Use mocks, fakes, and timers, but make it *behave*.
+
+---
+
+## 1. Recommended Tech Stack
+
+Pick one stack and stay consistent. Suggested:
+
+- **Frontend:** Next.js 14 (App Router) + React 18 + TypeScript
+- **Styling:** Tailwind CSS + shadcn/ui components + lucide-react icons
+- **State:** Zustand (or Redux Toolkit) for global store; React Query for async simulation
+- **Charts:** Recharts
+- **Code editor:** Monaco Editor (`@monaco-editor/react`)
+- **Diff viewer:** `react-diff-viewer-continued`
+- **Terminal:** xterm.js
+- **Markdown:** `react-markdown` + `remark-gfm`
+- **Forms:** React Hook Form + Zod
+- **Tables:** TanStack Table
+- **Mock backend:** MSW (Mock Service Worker) OR a single `lib/mockApi.ts` returning Promises with `setTimeout` delays (300â€“800ms) to simulate latency
+- **Persistence:** `zustand/persist` to localStorage so refreshes preserve state
+
+If you choose a different stack (SvelteKit, Vue/Nuxt, etc.) the **rules and feature list still apply 1:1**.
+
+---
+
+## 2. Global Layout
+
+```
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Top Bar: workspace switcher â”‚ search â”‚ model picker â”‚ profile â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚              â”‚                                                 â”‚
+â”‚  Sidebar     â”‚              Main Content Area                  â”‚
+â”‚  (section 4) â”‚              (route-driven)                     â”‚
+â”‚              â”‚                                                 â”‚
+â”‚              â”‚                                                 â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚  Status Bar: indexing %, model, branch, agent state, usage     â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+
+- Sidebar is **collapsible**, **persistent across refresh**, and **every item routes to a working page**.
+- Top bar **search** is a global command palette (Cmd/Ctrl+K) that searches files, commands, agents, rules, skills, and docs.
+- Status bar updates in real time as user actions happen (e.g., starting an agent flips the "agent state" indicator).
+
+---
+
+## 3. Sample Data â€” Required Seeds
+
+Seed the in-memory store on first load with the following. **Quantities are minimums.**
+
+| Entity | Min Count | Required Fields |
+|---|---|---|
+| Users (team members) | 8 | id, name, email, avatar, role (Admin / Member / Unpaid Admin), SSO group, lastActive, spendLimit, monthlyUsage |
+| Repositories | 6 | id, name, provider (GitHub/GitLab), defaultBranch, language, indexed%, lastSync, blocked (bool), size |
+| Files per repo | 20+ | path, language, size, content (use realistic snippets in TS/Python/Go/Rust) |
+| Agents (sessions) | 12 | id, name, mode (Agent/Ask/Plan/Debug), model, status (running/queued/done/failed), repo, branch, createdAt, durationSec, costUSD, owner |
+| Cloud Agents | 6 | + environment (default/Dockerfile), VM region, network mode, PR link, artifacts[] |
+| Pull Requests | 10 | id, repo, title, author, status, bugbotReviewed, comments[], filesChanged, additions, deletions |
+| Bugbot Findings | 15 | id, prId, severity (low/med/high/critical), category (bug/security/quality), file, line, description, status (open/fixed/dismissed) |
+| Automations | 5 | id, name, trigger (cron/PR-opened/Slack/Linear/Sentry/PagerDuty/webhook), prompt, model, enabled, lastRun, runCount |
+| Rules | 8 | id, scope (project/user/team), name, applyMode (always/intelligent/glob/manual), globs[], enforced, content |
+| Skills | 6 | id, name, description, scripts[], assets[], source (local/github), invocation |
+| Subagents | 4 | id, name, prompt, model, readonly, background, builtIn |
+| Hooks | 6 | id, event (sessionStart/preToolUse/postToolUse/etc.), command, scope, enabled |
+| MCP Servers | 5 | id, name, transport (stdio/sse/http), url, enabled, tools[], oauth |
+| Plugins | 4 | id, name, source (marketplace/github/local), required, installed |
+| Worktrees | 3 | id, branch, task, agentId, status |
+| Canvases | 4 | id, title, type (dashboard/audit/report), createdAt, lastEditedAt |
+| Audit Log Events | 100+ | id, timestamp, actor, eventType, resource, ip, success |
+| Analytics Daily Rows | 90 days | date, agentEdits, tabCompletions, messagesSent, activeUsers, aiShareCommitted, prsOpened, linesOfCode |
+| Billing Groups | 3 | id, name, members[], pooledLimit, usage |
+| Service Accounts | 3 | id, name, owner, lastUsed, archived |
+| Spend Limits | per-user + per-group | softLimit, hardLimit, currentSpend |
+| Models | 10+ | id, name, provider, contextWindow, pricePerMTokIn, pricePerMTokOut, supportsMaxMode, enabled |
+| Notifications | 12 | id, type, title, body, read, timestamp |
+
+**Sample data must be realistic** â€” use plausible names (Aiko Tanaka, Liam O'Brien, Priya Raman, Jonas Weber, etc.), realistic repo names (`payments-service`, `ml-feature-store`, `web-marketing`), real-looking file paths and code snippets. **No `foo`/`bar`/`Lorem ipsum`** except inside code-comment fixtures where appropriate.
+
+Provide a **"Reset sample data"** button in Settings â†’ Data so the reviewer can restore seeds at any time. Provide a **"Generate more"** button that adds 10 more rows of any list entity.
+
+---
+
+## 4. Complete Feature Inventory â€” Every Item Must Be Built and Reachable
+
+### 4.1 Sidebar Navigation (every item is a working route)
+
+1. **Home / Dashboard** â€” KPIs, charts, recent agents, recent PRs, top repos, alerts
+2. **Editor** â€” Monaco-based editor with file tree, tabs, diff view, git gutter
+3. **Agents** â€” list of all agent sessions (local + cloud) with filters
+4. **Cloud Agents** â€” dedicated cloud view with VM/environment controls
+5. **Plan Mode Workspace** â€” create/edit/approve plans
+6. **Debug Sessions** â€” history of debug runs with logs and instrumentation
+7. **Code Review** â€” Agent Review (local diffs) and Bugbot (PR findings)
+8. **Pull Requests** â€” list, detail, comments, autofix actions
+9. **Automations** â€” list, create wizard, trigger config, run history
+10. **Canvases** â€” gallery, open/edit/run/list/package-as-skill
+11. **Worktrees** â€” list, create, apply, delete, best-of-n
+12. **Search & Index** â€” Instant Grep + Semantic Search UI, indexing status per repo
+13. **Rules** â€” project/user/team rules editor with frontmatter
+14. **Skills** â€” viewer, install from GitHub, /migrate-to-skills
+15. **Subagents** â€” list and configure
+16. **Hooks** â€” list events, attach commands, enable/disable
+17. **MCP Servers** â€” list, install, configure transport, OAuth, view tools
+18. **Plugins & Marketplace** â€” official + community + team marketplace
+19. **Integrations** â€” Slack, Linear, GitHub, GitLab, JetBrains, Xcode, Deeplinks
+20. **CLI** â€” embedded simulated terminal demonstrating CLI features
+21. **Browser Tool** â€” sandboxed iframe demonstrating click/type/screenshot
+22. **Models & Pricing** â€” model table, Auto/Composer/API pools, Max Mode toggle
+23. **Usage & Billing** â€” pooled usage, spend limits, billing groups, invoices
+24. **Analytics** â€” Web Dashboard with all metrics from section 3
+25. **Audit Logs** â€” searchable, filterable, exportable
+26. **Team Members** â€” invite, role change, SCIM sync simulation, remove
+27. **SSO & SCIM** â€” SAML config screen, group mapping, JIT preview
+28. **Service Accounts** â€” create, rotate key, archive
+29. **Security Center** â€” Privacy Mode, repo blocklist, MCP allowlist, terminal allowlist, sandbox config, MDM policy preview
+30. **Notifications** â€” inbox with mark-read / mark-all-read
+31. **Settings** â€” profile, keybindings, theme, font, extensions import, data reset
+32. **Help & Docs** â€” searchable static doc index
+
+**Every one of these 32 routes must render a real, populated, interactive page.**
+
+### 4.2 Dashboard (Home) â€” All Widgets Must Be Live
+
+- **KPI cards (8):** Active Users, Active Agents, AI Share of Committed Code (%), Tab Completions today, Messages Sent today, PRs Opened (week), Cloud Agent Minutes, Spend This Month â€” each clickable, drilling into the relevant section.
+- **Time-series charts (4):** Agent Edits / Tab Completions / Messages Sent / AI Share â€” switchable 7d / 30d / 90d.
+- **Live Activity Feed:** last 20 events, auto-refresh every 5s with new mock events.
+- **Top Repositories:** sortable table.
+- **Top Users (Leaderboard):** with role badges.
+- **Recent Pull Requests:** with Bugbot status badges.
+- **Open Bugbot Findings:** grouped by severity.
+- **Running Agents:** mini-cards with stop/follow buttons.
+- **Spend Gauge:** vs monthly limit with alert threshold.
+- **Indexing Status:** per repo with progress bars.
+
+When the user creates an agent / opens a PR / runs an automation elsewhere in the app, **these widgets update on return to the dashboard**.
+
+### 4.3 Editor Surface â€” All AI Modes Working
+
+Implement and demonstrate, with simulated streaming responses:
+
+- **Tab autocomplete** â€” show ghost text after typing pause; Tab accepts, Esc rejects, Ctrl+Right accepts word-by-word.
+- **Inline Edit (Cmd/Ctrl+K)** â€” modal over selection, "Generate" produces a diff, Accept/Reject/Refine.
+- **Ask Mode** â€” read-only chat panel.
+- **Agent Mode** â€” chat with tool-call timeline (search â†’ read â†’ edit â†’ run-terminal â†’ done), checkpoints, queue follow-ups, drag to reorder, restore checkpoint.
+- **Plan Mode** â€” produces a virtual `plan.md` editable by user, "Approve & Build" hands off to Agent.
+- **Debug Mode** â€” produces hypothesis â†’ adds `console.log` â†’ simulated reproduction â†’ fix â†’ cleanup, with a structured timeline view.
+- **Max Mode** â€” toggle in model picker; show context-window indicator change.
+- **Model picker** â€” keyboard loop (Cmd+/), default model setting.
+- **`@` mentions** â€” files, folders, symbols, docs, web, codebase, past chats â€” all functional with autocomplete dropdown.
+- **Image input** â€” drag/drop or paste; previews and is sent in conversation.
+- **Voice input** â€” button that simulates transcription (you can use Web Speech API where supported, fallback to a fake transcript).
+- **Diff review** â€” side-by-side and unified, accept/reject per hunk.
+- **Checkpoints** â€” visible history with restore.
+- **Queued messages** â€” visible queue, drag-reorder, send-immediate shortcut.
+
+### 4.4 Agent Tools (Tool-Call Visualization)
+
+Each tool call must render a collapsible card in the chat showing inputs/outputs:
+
+Semantic search Â· Exact file/folder search Â· Web search Â· Rule fetch Â· File read Â· Image read Â· File edit Â· Shell command Â· Browser control Â· Image generation Â· Ask-user.
+
+Use mock implementations that return believable results from sample data.
+
+### 4.5 Search & Indexing
+
+- **Instant Grep** tab â€” fast exact match across sample files with highlighting.
+- **Semantic Search** tab â€” returns ranked results with similarity scores.
+- **Indexing status panel** â€” per repo: progress bar, last-sync, "Re-index" button, `.gitignore` and `.cursorignore` viewer.
+- **Included files viewer** â€” tree showing what is/isn't indexed with reasons.
+
+### 4.6 Terminal & Sandbox
+
+- xterm.js terminal where Agent-issued commands appear.
+- **Approval modal** for each command with Allow / Deny / Modify / Always-allow.
+- **Sandbox config UI:** Run-Everything / Ask-Every-Time / Run-in-Sandbox modes, command allowlist editor, network policy (none / allowlist / all), protected paths editor.
+- **Live demo** â€” clicking "Run sample task" makes the agent issue `npm test`, show the approval modal, then stream fake output.
+
+### 4.7 Browser Tool
+
+- An iframe sandbox where the agent "controls" a fake demo site.
+- Show the action timeline: navigate â†’ click â†’ type â†’ screenshot â†’ read DOM.
+- Screenshots saved to a gallery with timestamps.
+- Origin allowlist editor.
+
+### 4.8 Cloud Agents
+
+- **Launcher modal:** repo, branch, model, environment (default / Dockerfile), network mode, prompt.
+- **Agent detail page:** live log stream (simulated), VM stats, screenshots gallery, artifacts list with download buttons, "Open PR" action.
+- **My Machines** sub-tab with worker list and connection status.
+- **Self-hosted pool** sub-tab with workers, labels, concurrency, idle timeout.
+- **Cloud Agent API** docs page with copyable curl examples for each endpoint listed in the Cursor docs (list/launch/status/conversation/artifacts/follow-up/stop/delete/me/models/repos/webhook).
+
+### 4.9 Code Review
+
+- **Agent Review:** Quick vs Deep toggle on local diffs; produces structured findings.
+- **Bugbot:**
+  - PR list with `Reviewed` / `Pending` / `Disabled` badges.
+  - Finding detail: severity, file, line, suggestion, "Apply autofix" button that simulates spawning a Cloud Agent.
+  - Settings: auto/manual trigger, only-mentioned, once-per-PR, draft-PR behavior, `BUGBOT.md` editor, learned-rules list, manual-rules list.
+
+### 4.10 Automations
+
+- **Wizard:** Trigger â†’ Prompt â†’ Tools â†’ Model â†’ Environment â†’ Permissions â†’ Review.
+- **All triggers buildable:** schedule (cron), GitHub (PR-opened/pushed/labeled/merged/comment/CI/draft), Slack (message/channel-created), Webhook (with generated key + curl), Linear (issue/status/cycle), Sentry, PagerDuty.
+- **Run history** with status, duration, output, follow-ups.
+- **"Run now"** button that adds a fake run row.
+
+### 4.11 Customization
+
+- **Rules editor:** Monaco with frontmatter validation; precedence indicator (Team > Project > User); `/create-rule` simulator.
+- **Skills viewer:** opens `SKILL.md` and lists scripts/refs/assets; install-from-GitHub modal.
+- **Subagents config:** name/desc/model/readonly/background, with "Spawn now" demo.
+- **Hooks panel:** event grid with all events from Cursor docs, attach command, exit-code semantics, allow/deny/ask preview.
+- **Plugins:** marketplace tab + GitHub-import tab + local-test tab; install/uninstall mutates state.
+- **MCP:** transport selector, OAuth flow simulation, tool list view, response preview, debug logs, disable/update.
+
+### 4.12 Worktrees
+
+- List with status badges. Slash commands `/worktree`, `/apply-worktree`, `/delete-worktree`, `/best-of-n` invocable from a command bar â€” each modifies state visibly.
+
+### 4.13 Canvases
+
+- Gallery of sample canvases (dashboard / audit / report). Click to open in a side panel; "Rerun" and "Edit" produce visible state changes; "Package as Skill" creates a Skill entry.
+
+### 4.14 Integrations
+
+For each (Slack, Linear, GitHub, GitLab, JetBrains, Xcode, Deeplinks): a connection status card, a setup wizard, a "Test connection" button (simulated), and a feature checklist showing what is enabled. Disconnect must work.
+
+### 4.15 CLI Showcase
+
+Embedded xterm.js terminal pre-loaded with a fake `cursor-agent` binary that responds to:
+
+`/plan` `/ask` `/model` `/auto-run` `/sandbox` `/max-mode` `/new-chat` `/vim` `/help` `/feedback` `/resume` `/usage` `/about` `/copy-request-id` `/copy-conversation-id` `/logout` `/quit` `/setup-terminal` `/mcp list|enable|disable` `/rules` `/commands` `/compress`
+
+Also flags: `--print`, `--output-format`, `--resume`, `--continue`, `--model`, `--mode`, `--plan`, `--list-models`, `--sandbox`, `--worktree`, `--workspace`, `--yolo`. All produce believable output.
+
+### 4.16 Models, Pricing, Usage
+
+- Model table with all fields from section 3.
+- Pool toggles: Auto / Composer / API.
+- Max Mode toggle with explainer.
+- Privacy Mode toggle (default ON for Team/Enterprise simulated tier).
+- BYOK input with provider dropdown.
+- Plan tier selector: Hobby / Pro / Pro Plus / Ultra / Teams / Enterprise â€” switching updates which features are enabled vs locked.
+
+### 4.17 Team / Admin / Enterprise
+
+- **Members:** invite (email + link), role change, SSO auto-join domain rules, SCIM-synced badge, remove (with confirmation).
+- **SSO:** SAML config form, IdP metadata upload simulation, JIT toggle, multi-domain list, enforce-SSO toggle.
+- **SCIM:** endpoint URL + token display with rotate, group mapping table, "Trigger sync" simulated.
+- **Spend Limits:** per-user, per-group, with hard/soft thresholds and alerts.
+- **Repository Blocklist:** add/remove patterns; agents respect it (verifiable in chat).
+- **MCP Allowlist:** server + tool patterns.
+- **Terminal Allowlist:** command patterns.
+- **MDM Policies:** managed `permissions.json` preview, allowed extensions, custom gallery URL, update mode, workspace trust.
+- **Audit Logs:** infinite-scroll list, filters (actor, event type, date range, success), CSV export, "Stream to webhook/S3/SIEM" config (simulated).
+- **Analytics:** all charts and tables from Cursor docs (Agent Edits, Tab Completions, Messages Sent, Active Users, AI Share, Repo Insights, Conversation Insights, work category/type/complexity classification, Cloud Agent usage, Client Versions). Compare-mode (team A vs team B). CSV export. Analytics API endpoint preview.
+- **Billing Groups:** create, assign members (manual + CSV upload + SCIM-synced + API), rename, delete, reporting view.
+- **Service Accounts:** create, key display+rotate, archive, repo access through team app.
+
+### 4.18 Security Center
+
+Single page that surfaces every security-related toggle and policy with explanations and current state pulled from the global store.
+
+### 4.19 Notifications & Command Palette
+
+- Cmd/Ctrl+K palette searches **all** entities and commands; Enter executes.
+- Bell icon with unread count; per-notification deep-link.
+
+### 4.20 Settings
+
+Tabs: Profile, Appearance (theme, font family, size, ligatures, light/dark/system), Keybindings (VS Code default + JetBrains preset + custom remap), Editor (autosave, format-on-save), Extensions (Open VSX simulated import), Data (reset seeds, generate more, export/import JSON), Privacy.
+
+---
+
+## 5. Live Test Scenarios â€” Reviewer Must Be Able to Execute All of These
+
+Provide a **"Live Test Tour"** button on the dashboard that walks through these 12 scenarios with a guided overlay (next/skip). Each scenario must complete end-to-end without errors.
+
+1. **Index a repo:** click Reindex on `payments-service` â†’ progress bar fills â†’ status flips to 100% â†’ semantic search returns ranked results.
+2. **Run an Agent task:** open Editor â†’ prompt "add input validation to `checkout.ts`" â†’ watch tool-call timeline â†’ review diff â†’ Accept â†’ file content changes â†’ Activity Feed updates.
+3. **Plan Mode:** open Plan Mode â†’ submit feature request â†’ editable `plan.md` appears â†’ Approve & Build â†’ handoff to Agent visible.
+4. **Debug Mode:** trigger sample failing test â†’ Debug Mode adds logs â†’ repro â†’ fix â†’ cleanup â†’ green test.
+5. **Cloud Agent:** Launch on a repo â†’ log streams â†’ artifact appears â†’ "Open PR" creates a PR row in the PR list.
+6. **Bugbot:** open a PR â†’ click "Run Bugbot" â†’ findings appear â†’ click "Apply Autofix" â†’ Cloud Agent simulated â†’ PR comment added.
+7. **Automation:** create a webhook automation â†’ copy webhook URL â†’ click "Send test event" â†’ run row appears.
+8. **MCP install:** install a sample MCP server â†’ enable a tool â†’ invoke it from chat â†’ response card renders.
+9. **Hook:** add a `before-submit-prompt` hook with `deny` exit â†’ try to submit a prompt â†’ see it blocked with reason.
+10. **Worktree best-of-n:** run `/best-of-n 3` on a task â†’ 3 worktrees appear â†’ pick winner â†’ others archived.
+11. **Audit & Analytics:** perform several actions â†’ audit log shows them â†’ analytics charts increment.
+12. **Enterprise lockdown:** as Admin, enable "Privacy Mode enforced" + add a repo to blocklist + restrict a model â†’ switch to a Member account â†’ verify those settings are read-only and the blocked repo is gone from the picker.
+
+---
+
+## 6. Acceptance Criteria â€” Self-Check Before Saying "Done"
+
+The build is **only complete** when **every** item below is true. Verify each.
+
+- [ ] All 32 sidebar routes render real content with seeded data.
+- [ ] Every dashboard widget reflects current store state and updates after user actions elsewhere.
+- [ ] Every form validates with Zod (or equivalent) and shows field-level errors.
+- [ ] Every list has search + filter + sort + pagination + row actions.
+- [ ] Tab autocomplete, Inline Edit, Ask, Agent, Plan, Debug, Max Mode all work in the editor.
+- [ ] All 11 agent tools render tool-call cards with mocked but plausible I/O.
+- [ ] Terminal, browser, MCP, hooks, rules, skills, subagents, plugins, worktrees, canvases all interactive.
+- [ ] Cloud Agent launcher â†’ log â†’ artifact â†’ PR flow works end-to-end.
+- [ ] Bugbot detection + autofix flow works.
+- [ ] All 7 automation trigger types creatable; "Run now" produces a run row.
+- [ ] CLI showcase recognizes all listed slash commands and flags.
+- [ ] All integrations have wizard + test + disconnect.
+- [ ] Members / SSO / SCIM / Spend / Blocklist / Allowlists / MDM / Audit / Analytics / Billing Groups / Service Accounts all functional.
+- [ ] Privacy Mode toggle measurably changes behavior (tag on outgoing requests in mock layer).
+- [ ] Plan tier selector locks/unlocks features as documented.
+- [ ] Cmd+K palette searches every entity type.
+- [ ] Notifications generate from real actions.
+- [ ] Reset / Generate-More / Export / Import all work.
+- [ ] State persists across page refresh.
+- [ ] Live Test Tour completes all 12 scenarios with no console errors.
+- [ ] No "Coming Soon", no `alert("TODO")`, no empty pages.
+- [ ] No console errors or warnings during the Live Test Tour.
+- [ ] Responsive at â‰¥1280px; usable at 1024px.
+- [ ] Dark mode and light mode both fully styled.
+
+---
+
+## 7. Anti-Patterns â€” Do Not Do These
+
+- âŒ "This screen is a placeholder for the real implementation."
+- âŒ Buttons that do nothing or only `console.log`.
+- âŒ Charts with hardcoded fake numbers that never change.
+- âŒ Modals that open but have no submit logic.
+- âŒ Tables without pagination/sort/filter.
+- âŒ Skipping any item from section 4 because it "would require a backend".
+- âŒ Saying "due to scope" â€” the scope **is** all of section 4.
+- âŒ Using `<a href="#">` without onClick handlers.
+- âŒ Hiding features behind feature flags that default off.
+- âŒ Generic Lorem ipsum data instead of realistic seeds.
+
+---
+
+## 8. Delivery Format
+
+Produce the project as a **runnable repository**:
+
+1. `README.md` with: setup (`npm i && npm run dev`), feature map, screenshot grid, Live Test Tour link.
+2. `package.json` with all dependencies pinned.
+3. `app/` (Next.js) or `src/` with route-per-feature folders matching section 4.1.
+4. `lib/store/` â€” Zustand slices, one per entity type from section 3.
+5. `lib/seed/` â€” seed data files (one per entity).
+6. `lib/mockApi/` â€” async functions simulating network latency.
+7. `components/ui/` â€” shadcn primitives.
+8. `components/feature/<name>/` â€” feature components.
+9. `tests/` â€” at least smoke tests asserting every route renders without throwing.
+10. A **`FEATURE_CHECKLIST.md`** at repo root, copy of section 6 with every box checked and a one-line note per item describing where it's implemented.
+
+---
+
+## 9. Final Instruction
+
+> Build the entire system in **one cohesive pass**. Do not ask clarifying questions about scope â€” section 4 is the scope. Do not propose phasing â€” sections 1â€“8 are the deliverable.
+>
+> If output length is constrained, **prioritize completeness of feature coverage over polish of any single feature**. A simple working version of every feature beats a beautiful version of half the features.
+>
+> When you are done, output the **`FEATURE_CHECKLIST.md` with every box ticked** as the very last thing in your response, so the reviewer can confirm at a glance that nothing was skipped.
+
+---
+
+*End of master prompt.*
